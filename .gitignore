@@ -1,0 +1,32 @@
+# Závislosti
+/node_modules
+
+# Next.js build výstup
+/.next/
+/out/
+
+# Produkční build
+/build
+
+# Systémové soubory
+.DS_Store
+*.pem
+
+# Logy
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Lokální env soubory
+.env
+.env*.local
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Claude (lokální nastavení editoru)
+.claude/
