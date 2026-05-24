@@ -11,6 +11,12 @@ export default function VariantsSlide({ offer }: VariantsSlideProps) {
   const variants = offer.variants.slice(0, offer.variantCount);
   // Množina indexů funkcí v1 – pro detekci "navíc" ve v2
   const v1Set = new Set(variants[0]?.features ?? []);
+  // Množina textů custom služeb v1 – pro detekci "navíc" ve v2
+  const v1CustomSet = new Set(
+    (variants[0]?.customServices ?? [])
+      .filter(cs => cs.enabled && cs.text.trim())
+      .map(cs => cs.text.trim())
+  );
 
   return (
     <div className="w-full h-full bg-white flex flex-col overflow-hidden select-none"
@@ -37,6 +43,7 @@ export default function VariantsSlide({ offer }: VariantsSlideProps) {
               variant={v}
               highlight={isDark}
               v1Set={isDark ? v1Set : null}
+              v1CustomSet={isDark ? v1CustomSet : null}
               showBadgeRow={variants.length === 2}
             />
           );
@@ -49,12 +56,13 @@ export default function VariantsSlide({ offer }: VariantsSlideProps) {
 interface VariantCardProps {
   variant: VariantData;
   highlight: boolean;
-  v1Set: Set<number> | null; // null = není potřeba rozlišovat extras
-  showBadgeRow: boolean;     // true = rezervovat místo pro badge v obou kartách
+  v1Set: Set<number> | null;       // null = není potřeba rozlišovat extras
+  v1CustomSet: Set<string> | null; // null = není potřeba rozlišovat extras (custom)
+  showBadgeRow: boolean;           // true = rezervovat místo pro badge v obou kartách
 }
 
-function VariantCard({ variant, highlight, v1Set, showBadgeRow }: VariantCardProps) {
-  // Každá funkce: { label, isExtra }
+function VariantCard({ variant, highlight, v1Set, v1CustomSet, showBadgeRow }: VariantCardProps) {
+  // Standardní funkce: { label, isExtra }
   const feats = variant.features
     .slice()
     .sort((a, b) => a - b)
@@ -64,10 +72,20 @@ function VariantCard({ variant, highlight, v1Set, showBadgeRow }: VariantCardPro
     }))
     .filter(f => Boolean(f.label));
 
-  // Sdílené jako první, navíc jako poslední
+  // Custom služby: pouze enabled s neprázdným textem
+  const customFeats = (variant.customServices ?? [])
+    .filter(cs => cs.enabled && cs.text.trim())
+    .map(cs => ({
+      label: cs.text.trim(),
+      isExtra: v1CustomSet !== null && !v1CustomSet.has(cs.text.trim()),
+    }));
+
+  // Sdílené standardní → sdílené custom → extra standardní → extra custom
   const sorted = [
     ...feats.filter(f => !f.isExtra),
+    ...customFeats.filter(f => !f.isExtra),
     ...feats.filter(f => f.isExtra),
+    ...customFeats.filter(f => f.isExtra),
   ];
 
   // Plnění zleva: col1 prvních 13, col2 zbytek
@@ -126,21 +144,52 @@ function VariantCard({ variant, highlight, v1Set, showBadgeRow }: VariantCardPro
         {variant.name || 'Varianta'}
       </h3>
 
-      {/* Cena */}
-      <div className="mt-1.5 flex items-baseline gap-1">
-        <span
-          className={`font-extrabold ${highlight ? 'text-[#04EDB5]' : 'text-[#012163]'}`}
-          style={{ fontSize: 'clamp(12px, 2.8cqw, 32px)' }}
-        >
-          {formatPrice(variant.price, variant.currency)}
-        </span>
-        <span
-          className={`font-medium ${highlight ? 'text-white/50' : 'text-[#012163]/40'}`}
-          style={{ fontSize: 'clamp(6px, 0.9cqw, 11px)' }}
-        >
-          / měsíc bez DPH
-        </span>
-      </div>
+      {/* Cena – se slevou nebo bez */}
+      {(variant.discountEnabled && variant.discountFinalPrice) ? (
+        <div className="mt-1.5">
+          <span
+            className={`line-through ${highlight ? 'text-white/40' : 'text-[#012163]/40'}`}
+            style={{ fontSize: 'clamp(10px, 1.9cqw, 22px)' }}
+          >
+            {formatPrice(variant.price, variant.currency)}
+          </span>
+          <div
+            className={`${highlight ? 'text-white/55' : 'text-[#012163]/55'}`}
+            style={{ fontSize: 'clamp(6px, 1.05cqw, 12px)' }}
+          >
+            {`Finální cena po slevě  •  −${variant.discountPercent} %`}
+          </div>
+          <div className="flex items-baseline gap-1">
+            <span
+              className={`font-extrabold ${highlight ? 'text-[#04EDB5]' : 'text-[#012163]'}`}
+              style={{ fontSize: 'clamp(12px, 2.8cqw, 32px)' }}
+            >
+              {formatPrice(variant.discountFinalPrice, variant.currency)}
+            </span>
+            <span
+              className={`font-medium ${highlight ? 'text-white/50' : 'text-[#012163]/40'}`}
+              style={{ fontSize: 'clamp(6px, 0.9cqw, 11px)' }}
+            >
+              / měsíc bez DPH
+            </span>
+          </div>
+        </div>
+      ) : (
+        <div className="mt-1.5 flex items-baseline gap-1">
+          <span
+            className={`font-extrabold ${highlight ? 'text-[#04EDB5]' : 'text-[#012163]'}`}
+            style={{ fontSize: 'clamp(12px, 2.8cqw, 32px)' }}
+          >
+            {formatPrice(variant.price, variant.currency)}
+          </span>
+          <span
+            className={`font-medium ${highlight ? 'text-white/50' : 'text-[#012163]/40'}`}
+            style={{ fontSize: 'clamp(6px, 0.9cqw, 11px)' }}
+          >
+            / měsíc bez DPH
+          </span>
+        </div>
+      )}
 
       {/* Oddělovač */}
       <div className={`h-px my-[4%] flex-shrink-0 ${highlight ? 'bg-white/10' : 'bg-[#E8EBFF]'}`} />

@@ -2,19 +2,21 @@ import { OfferData, SalespersonData, VariantData } from './types';
 
 // Seznam všech funkcí produktu Mediaboard
 export const FEATURES = [
-  'Online média',
+  'Online média (včetně Paywallů)',
   'TV & Rádio',
-  'Podcasty / Newslettery',
-  'Sociální sítě',
+  'Podcasty & Newslettery',
+  'Sociální sítě a diskuzní fóra',
   'Tisk',
-  'Placené zdroje (paywall)',
-  'Sentiment',
-  'Email Reporty',
-  'Překlady (základ 50)',
+  'Strojový sentiment',
+  'E-mailové reporty',
+  'AI shrnutí do reportů',
+  'Základní překlady',
+  'Překlady přes DeepL',
   'Mobilní aplikace',
   'Mediální metriky (AVE, GRP…)',
-  'Analytika – základní',
-  'Archiv',
+  'Strojová analytika',
+  'Archiv neomezený do roku 1990',
+  'API napojení',
   'AI shrnutí MAIA',
   'Dashboardy',
   'Connect – Medialist',
@@ -32,9 +34,13 @@ export const FEATURES = [
 const defaultVariant = (name: string): VariantData => ({
   name,
   features: [],
+  customServices: [],
   price: '',
   currency: 'CZK',
   description: '',
+  discountEnabled: false,
+  discountPercent: '',
+  discountFinalPrice: '',
 });
 
 export const DEFAULT_SALESPERSON: SalespersonData = {

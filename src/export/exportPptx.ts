@@ -238,8 +238,14 @@ function addVariantsSlide(pptx: PptxGenJS, offer: OfferData, images: ImageContex
   const variants = offer.variants.slice(0, offer.variantCount);
   const cardTop = 0.85;
   const cardH = H - cardTop - 0.3;
-  // Množina indexů z varianty 1 – pro detekci "navíc" ve variantě 2
+  // Množina indexů standardních funkcí v1 – pro detekci "navíc" ve v2
   const v1Set = new Set(variants[0]?.features ?? []);
+  // Množina textů custom služeb v1 – pro detekci "navíc" ve v2
+  const v1CustomSet = new Set(
+    (variants[0]?.customServices ?? [])
+      .filter(cs => cs.enabled && cs.text.trim())
+      .map(cs => cs.text.trim())
+  );
 
   variants.forEach((v, i) => {
     const isDark = i === 1 && variants.length === 2;
@@ -291,13 +297,38 @@ function addVariantsSlide(pptx: PptxGenJS, offer: OfferData, images: ImageContex
     });
     yPos += 0.35;
 
-    // Cena
-    slide.addText(formatPrice(v.price, v.currency), {
-      x: cardX + pad, y: yPos, w: cardW - 2 * pad, h: 0.4,
-      color: isDark ? TEAL : NAVY,
-      fontSize: 18, bold: true,
-    });
-    yPos += 0.38;
+    // Cena – se slevou nebo bez
+    if (v.discountEnabled && v.discountFinalPrice) {
+      // Původní cena přeškrtnutá, menším písmem
+      slide.addText(formatPrice(v.price, v.currency), {
+        x: cardX + pad, y: yPos, w: cardW - 2 * pad, h: 0.3,
+        color: (isDark ? WHITE : NAVY) + '66',
+        fontSize: 13,
+        strike: true,
+      });
+      yPos += 0.29;
+      // Popis slevy
+      slide.addText(`Finální cena po slevě  •  −${v.discountPercent} %`, {
+        x: cardX + pad, y: yPos, w: cardW - 2 * pad, h: 0.2,
+        color: (isDark ? WHITE : NAVY) + '77',
+        fontSize: 7.5,
+      });
+      yPos += 0.2;
+      // Cena po slevě – plná velikost
+      slide.addText(formatPrice(v.discountFinalPrice, v.currency), {
+        x: cardX + pad, y: yPos, w: cardW - 2 * pad, h: 0.4,
+        color: isDark ? TEAL : NAVY,
+        fontSize: 18, bold: true,
+      });
+      yPos += 0.38;
+    } else {
+      slide.addText(formatPrice(v.price, v.currency), {
+        x: cardX + pad, y: yPos, w: cardW - 2 * pad, h: 0.4,
+        color: isDark ? TEAL : NAVY,
+        fontSize: 18, bold: true,
+      });
+      yPos += 0.38;
+    }
 
     // Podtext ceny
     slide.addText('za měsíc bez DPH', {
@@ -315,17 +346,27 @@ function addVariantsSlide(pptx: PptxGenJS, offer: OfferData, images: ImageContex
     });
     yPos += 0.1;
 
-    // Funkce – každá položka: { label, isExtra }
+    // Standardní funkce – každá položka: { label, isExtra }
     const feats = v.features
       .slice()
       .sort((a, b) => a - b)
       .map(idx => ({ label: FEATURES[idx] as string, isExtra: isDark && !v1Set.has(idx) }))
       .filter(f => Boolean(f.label));
 
-    // Sdílené funkce jako první, navíc funkce jako poslední
+    // Custom služby: pouze enabled s neprázdným textem
+    const customFeats = (v.customServices ?? [])
+      .filter(cs => cs.enabled && cs.text.trim())
+      .map(cs => ({
+        label: cs.text.trim(),
+        isExtra: isDark && !v1CustomSet.has(cs.text.trim()),
+      }));
+
+    // Sdílené standardní → sdílené custom → extra standardní → extra custom
     const sortedFeats = [
       ...feats.filter(f => !f.isExtra),
+      ...customFeats.filter(f => !f.isExtra),
       ...feats.filter(f => f.isExtra),
+      ...customFeats.filter(f => f.isExtra),
     ];
 
     const availH = cardTop + cardH - yPos - 0.25;

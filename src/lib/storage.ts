@@ -36,7 +36,18 @@ export function loadOffer(): OfferData {
   if (typeof window === 'undefined') return DEFAULT_OFFER;
   try {
     const raw = localStorage.getItem(KEY_OFFER);
-    return raw ? { ...DEFAULT_OFFER, ...JSON.parse(raw) } : DEFAULT_OFFER;
+    if (!raw) return DEFAULT_OFFER;
+    const parsed = JSON.parse(raw) as Partial<OfferData>;
+    // Hluboké mergování variant – zajistí, že nová pole (discount…) mají defaultní hodnoty
+    // i při načtení starých nabídek uložených před přidáním slevy
+    return {
+      ...DEFAULT_OFFER,
+      ...parsed,
+      variants: [
+        { ...DEFAULT_OFFER.variants[0], ...parsed.variants?.[0] },
+        { ...DEFAULT_OFFER.variants[1], ...parsed.variants?.[1] },
+      ] as OfferData['variants'],
+    };
   } catch {
     return DEFAULT_OFFER;
   }
