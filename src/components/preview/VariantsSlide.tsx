@@ -33,18 +33,27 @@ export default function VariantsSlide({ offer }: VariantsSlideProps) {
         Cenová nabídka – {variants.length === 1 ? '1 varianta' : '2 varianty'}
       </p>
 
-      {/* Grid variant */}
-      <div className={`flex-1 grid gap-[2.5%] min-h-0 ${variants.length === 2 ? 'grid-cols-2' : 'grid-cols-1 max-w-[60%] mx-auto w-full'}`}>
+      {/* Grid variant – 40/60 při 2 variantách, plná šířka při 1 */}
+      <div
+        className="flex-1 min-h-0"
+        style={variants.length === 2
+          ? { display: 'grid', gridTemplateColumns: '2fr 3fr', gap: '2.5%' }
+          : { display: 'grid', gridTemplateColumns: '1fr' }
+        }
+      >
         {variants.map((v, i) => {
-          const isDark = i === 1 && variants.length === 2;
+          // Tmavá karta: vždy při 1 variantě, nebo 2. karta při 2 variantách
+          const isDark = variants.length === 1 || (i === 1 && variants.length === 2);
           return (
             <VariantCard
               key={i}
               variant={v}
               highlight={isDark}
-              v1Set={isDark ? v1Set : null}
-              v1CustomSet={isDark ? v1CustomSet : null}
-              showBadgeRow={variants.length === 2}
+              // isExtra detekce jen při 2 variantách
+              v1Set={isDark && variants.length === 2 ? v1Set : null}
+              v1CustomSet={isDark && variants.length === 2 ? v1CustomSet : null}
+              // Badge oblast vždy viditelná (u tmavé = badge, u světlé = prázdný spacer pro zarovnání)
+              showBadgeRow={true}
             />
           );
         })}
