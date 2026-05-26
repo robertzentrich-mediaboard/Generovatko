@@ -8,7 +8,7 @@ import VariantsSlide from '@/components/preview/VariantsSlide';
 import ContactSlide from '@/components/preview/ContactSlide';
 
 // Dynamický import exportů – pouze na straně klienta
-const PdfExportButton = dynamic(() => import('@/export/PdfExportButton'), { ssr: false });
+const PdfExportButton  = dynamic(() => import('@/export/PdfExportButton'),  { ssr: false });
 const PptxExportButton = dynamic(() => import('@/export/PptxExportButton'), { ssr: false });
 
 interface Step3Props {
@@ -98,7 +98,7 @@ export default function Step3Preview({ offer, salesperson, onBack, onNewOffer }:
           Vygenerujte nabídku ve formátu PDF nebo PPTX pro odeslání klientovi.
         </p>
         <div className="flex flex-col sm:flex-row gap-3">
-          <PdfExportButton offer={offer} salesperson={salesperson} />
+          <PdfExportButton  offer={offer} salesperson={salesperson} />
           <PptxExportButton offer={offer} salesperson={salesperson} />
         </div>
       </div>

@@ -2,22 +2,45 @@
 const nextConfig = {
   reactStrictMode: true,
 
-  // @react-pdf/renderer a závislosti ponechat jako Node.js externals –
-  // nesmí se bundlovat s browser podmínkami (jinak chybí renderToBuffer, fontkit.open atd.)
-  serverExternalPackages: [
-    '@react-pdf/renderer',
-    '@react-pdf/font',
-    '@react-pdf/layout',
-    '@react-pdf/render',
-    '@react-pdf/pdfkit',
-    '@react-pdf/image',
-    'fontkit',
-    'pdfkit',
-  ],
+  // V Next.js 14 patří server externals pod experimental
+  experimental: {
+    serverComponentsExternalPackages: [
+      '@react-pdf/renderer',
+      '@react-pdf/font',
+      '@react-pdf/layout',
+      '@react-pdf/render',
+      '@react-pdf/pdfkit',
+      '@react-pdf/image',
+      'fontkit',
+      'pdfkit',
+    ],
+  },
 
-  // Pro client bundle – canvas není potřeba
-  webpack: (config, { isServer }) => {
+  webpack: (config, { webpack, isServer }) => {
     if (!isServer) {
+      // pptxgenjs interně používá node: prefix (node:fs, node:path…)
+      // Webpack 5 v Next.js 14 toto nepodporuje – odstraníme prefix a přidáme fallbacky
+      config.plugins.push(
+        new webpack.NormalModuleReplacementPlugin(/^node:/, (resource) => {
+          resource.request = resource.request.replace(/^node:/, '');
+        }),
+      );
+
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs:     false,
+        path:   false,
+        os:     false,
+        crypto: false,
+        stream: false,
+        buffer: false,
+        util:   false,
+        events: false,
+        url:    false,
+        zlib:   false,
+      };
+
+      // canvas není potřeba v browseru
       config.resolve.alias.canvas = false;
     }
     return config;

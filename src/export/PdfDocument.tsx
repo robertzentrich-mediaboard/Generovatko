@@ -102,11 +102,11 @@ const s = StyleSheet.create({
   },
   contPhoto: { width: PW * 0.44, height: PH, objectFit: 'cover' },
   contHeadline: { color: WHITE, fontSize: 22, fontWeight: 800, lineHeight: 1.2, marginTop: 14 },
-  contName: { color: WHITE, fontSize: 13, fontWeight: 700, marginTop: 20 },
-  contPos:  { color: 'rgba(255,255,255,0.6)', fontSize: 9, marginTop: 2 },
-  contLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 8, fontWeight: 600, width: 14 },
-  contVal:   { color: WHITE, fontSize: 8, flex: 1 },
-  contRow: { flexDirection: 'row', alignItems: 'center', marginTop: 5 },
+  contName: { color: WHITE, fontSize: 15, fontWeight: 700 },
+  contPos:  { color: 'rgba(255,255,255,0.6)', fontSize: 10.5, marginTop: 2 },
+  contLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 9.5, fontWeight: 600, width: 16 },
+  contVal:   { color: WHITE, fontSize: 9.5, flex: 1 },
+  contRow: { flexDirection: 'row', alignItems: 'center', marginTop: 6 },
 });
 
 // SVG checkmark – font-independent, vždy se zobrazí správně
@@ -334,16 +334,23 @@ export default function PdfDocument({ offer, salesperson, images, fontFamily = '
         )}
 
         <View style={s.contLeft}>
+          {/* Logo – nahoře */}
           {images.logoWhite ? (
             <PDFImage src={images.logoWhite} style={{ width: 90, height: logoH(90) }} />
           ) : (
             <Text style={{ color: WHITE, fontSize: 12, fontWeight: 800 }}>mediaboard</Text>
           )}
-          <Text style={s.contHeadline}>{'Posuňte svou komunikaci\nna další úroveň.'}</Text>
+
+          {/* Headline – flex: 1 pohltí volné místo a přitiskne spodní blok dolů */}
+          <View style={{ flex: 1, justifyContent: 'flex-start' }}>
+            <Text style={s.contHeadline}>{'Posuňte svou komunikaci\nna další úroveň.'}</Text>
+          </View>
+
+          {/* Jméno + kontakty + pill – přitisknuto ke spodnímu okraji */}
           <Text style={s.contName}>{salesperson.name || 'Jméno obchodníka'}</Text>
           {salesperson.position ? <Text style={s.contPos}>{salesperson.position}</Text> : null}
 
-          <View style={{ marginTop: 14 }}>
+          <View style={{ marginTop: 12 }}>
             {salesperson.phone ? (
               <View style={s.contRow}>
                 <Text style={s.contLabel}>T:</Text>
@@ -362,7 +369,7 @@ export default function PdfDocument({ offer, salesperson, images, fontFamily = '
             </View>
           </View>
 
-          <View style={[s.pillDark, { marginTop: 'auto' }]}>
+          <View style={[s.pillDark, { marginTop: 16 }]}>
             <Text style={s.pillDarkTxt}>www.mediaboard.com</Text>
           </View>
         </View>

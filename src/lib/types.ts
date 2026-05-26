@@ -32,10 +32,10 @@ export interface OfferData {
   variants: [VariantData, VariantData]; // vždy 2, zobrazuje se jen prvních N
 }
 
-// Kontext obrázků předávaný do exportů (base64 data URLs)
+// Kontext obrázků předávaný do PDF exportu (base64 data URLs)
 export interface ImageContext {
   logoBlue: string;
   logoWhite: string;
   screenshot: string;
-  gradient?: string; // gradient PNG – pouze pro PDF (PPTX má nativní gradient fill)
+  gradient?: string;
 }
