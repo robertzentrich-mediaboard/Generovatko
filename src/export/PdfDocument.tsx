@@ -213,7 +213,8 @@ export default function PdfDocument({ offer, salesperson, images, fontFamily = '
                   .map(cs => cs.text.trim())
               );
               return variants.map((v, i) => {
-                const isDark = i === 1 && variants.length === 2;
+                // Tmavá karta: vždy při 1 variantě, nebo 2. karta při 2 variantách
+                const isDark = variants.length === 1 || (i === 1 && variants.length === 2);
                 // Standardní funkce: { label, isExtra }
                 const feats = v.features
                   .slice()
@@ -252,9 +253,15 @@ export default function PdfDocument({ offer, salesperson, images, fontFamily = '
                 const col2 = sorted.slice(COL_MAX);
 
                 return (
-                  <View key={i} style={isDark ? s.cardDark : s.cardLight}>
-                    {/* Fixní výška badge oblasti v obou kartách → název/cena/funkce jsou vždy na stejné úrovni */}
-                    {variants.length === 2 && (
+                  <View key={i} style={[
+                    isDark ? s.cardDark : s.cardLight,
+                    // 40/60 split při 2 variantách; marginLeft jen u 2. karty
+                    variants.length === 2
+                      ? { flex: isDark ? 3 : 2 }
+                      : { flex: 1, marginLeft: 0 },
+                  ]}>
+                    {/* Badge oblast: u obou karet při 2 variantách (zarovnání), vždy u tmavé */}
+                    {(variants.length === 2 || isDark) && (
                       <View style={s.badgeRow}>
                         {isDark && (
                           <View style={s.recBadge}><Text style={s.recBadgeTxt}>DOPORUČUJEME</Text></View>
