@@ -1,5 +1,5 @@
 import {
-  Document, Page, View, Text, Image as PDFImage, StyleSheet,
+  Document, Page, View, Text, Image as PDFImage, StyleSheet, Svg, Polyline,
 } from '@react-pdf/renderer';
 import { FEATURES, formatDate, formatPrice } from '@/lib/constants';
 import { ImageContext, OfferData, SalespersonData } from '@/lib/types';
@@ -109,6 +109,23 @@ const s = StyleSheet.create({
   contRow: { flexDirection: 'row', alignItems: 'center', marginTop: 5 },
 });
 
+// SVG checkmark – font-independent, vždy se zobrazí správně
+function Checkmark({ size = 9 }: { size?: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 10 10"
+         style={{ marginRight: 4, marginTop: 0.5, flexShrink: 0 }}>
+      <Polyline
+        points="1,5.5 3.8,8 9,2"
+        stroke={TEAL}
+        strokeWidth="2"
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
 interface Props {
   offer: OfferData;
   salesperson: SalespersonData;
@@ -213,7 +230,10 @@ export default function PdfDocument({ offer, salesperson, images, fontFamily = '
 
                 const renderFeat = (f: { label: string; isExtra: boolean }, fi: number) => (
                   <View key={fi} style={s.featRow}>
-                    <Text style={s.tick}>{f.isExtra ? '+' : '✓'}</Text>
+                    {f.isExtra
+                      ? <Text style={s.tick}>+</Text>
+                      : <Checkmark />
+                    }
                     <Text style={f.isExtra ? s.featTxtExtra : (isDark ? s.featTxtD : s.featTxtL)}>
                       {f.label}
                     </Text>
